@@ -35,6 +35,8 @@ endif ()
 add_executable(RIOW_Vk src/main.cpp
         src/application.cpp
         src/application.h
+        src/utils.cpp
+        src/utils.h
 )
 
 add_subdirectory(external/VulkanMemoryAllocator)

@@ -4,6 +4,9 @@
 int main(int argc, char* argv[])
 {
     Application app;
-    app.initialize();
-    app.run();
+    if (app.initialize())
+    {
+        app.run();
+    }
+    app.shutdown();
 }
