@@ -17,6 +17,7 @@ public:
     ImGuiRenderer(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t gfxFamilyIdx, VkQueue gfxQueue, SDL_Window* window);
     ~ImGuiRenderer();
     void render();
+    void newFrame();
 private:
     void init();
     void shutdown();
@@ -32,6 +33,9 @@ private:
 
 
     VkDescriptorPool descriptorPool;
+
+    bool show_demo_window;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 };
 
