@@ -37,9 +37,29 @@ add_executable(RIOW_Vk src/main.cpp
         src/application.h
         src/utils.cpp
         src/utils.h
+        src/ImGuiRenderer.cpp
+        src/ImGuiRenderer.h
 )
 
 add_subdirectory(external/VulkanMemoryAllocator)
+
+add_library(imgui STATIC
+        external/imgui/imgui.cpp
+        external/imgui/imgui_draw.cpp
+        external/imgui/imgui_widgets.cpp
+        external/imgui/imgui_tables.cpp
+        external/imgui/imgui_demo.cpp
+        external/imgui/backends/imgui_impl_sdl3.cpp
+        external/imgui/backends/imgui_impl_vulkan.cpp
+)
+target_include_directories(imgui PUBLIC
+        external/imgui
+        external/imgui/backends
+)
+target_link_libraries(imgui PRIVATE
+        SDL3::SDL3
+        Vulkan::Vulkan
+)
 
 target_link_libraries(RIOW_Vk  PRIVATE
         Vulkan::Vulkan
@@ -47,6 +67,6 @@ target_link_libraries(RIOW_Vk  PRIVATE
         Vulkan::shaderc_combined
         SDL3::SDL3
         GPUOpen::VulkanMemoryAllocator
+        imgui
 )
-
 

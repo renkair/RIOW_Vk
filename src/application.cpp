@@ -1,7 +1,6 @@
 //
 // Created by Renkai on 01/07/2026.
 //
-#define VK_NO_PROTOTYPES
 #include "application.h"
 
 #define VOLK_IMPLEMENTATION
@@ -17,6 +16,9 @@
 #include <SDL3/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 
+#include "ImGuiRenderer.h"
+#include "imgui_impl_sdl3.h"
+#include "imgui_impl_vulkan.h"
 #include "utils.h"
 
 
@@ -28,6 +30,7 @@ void Application::run()
         SDL_Event event{0};
         while (SDL_PollEvent(&event))
         {
+            ImGui_ImplSDL3_ProcessEvent(&event);
             switch (event.type)
             {
             case SDL_EVENT_QUIT:
@@ -39,12 +42,41 @@ void Application::run()
                 break;
             }
         }
+
+        // Start the Dear ImGui frame
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow(&show_demo_window);
+
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::End();
+        }
+
         render();
     }
 }
 
 bool Application::initialize()
 {
+
     if (SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
         window = SDL_CreateWindow("Ray Tracer",
@@ -59,7 +91,7 @@ bool Application::initialize()
         {
             return false;
         }
-
+        imGuiRenderer = new ImGuiRenderer(vulkanInstance, physicalDevice, device, gfxQueueFamIdx, gfxQueue, window);
     }
     else
     {
@@ -330,7 +362,7 @@ bool Application::createDevice(VkPhysicalDevice physicalDevice)
         std::cerr << "failed to create logical device" << std::endl;
         return false;
     }
-
+    volkLoadDevice(device);
     //grab the VKQueue object finally
     vkGetDeviceQueue(device, gfxQueueFamIdx, 0, &gfxQueue);
     if (!gfxQueue)
@@ -900,6 +932,11 @@ void Application::render()
         //draw out triangle
         vkCmdBindPipeline(res.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
         vkCmdDraw(res.commandBuffer, 3, 1, 0, 0);
+
+        //////IMGUI
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), res.commandBuffer, VK_NULL_HANDLE);
+        ////IMGUI
     }
 
 
@@ -972,6 +1009,7 @@ void Application::render()
         .pSignalSemaphoreInfos = semaphoreSignals.data(),
     };
 
+
     vkQueueSubmit2(gfxQueue, 1, &submitInfo, VK_NULL_HANDLE);
 
     // present the image
@@ -984,6 +1022,9 @@ void Application::render()
         .pImageIndices = &imageIndex,
         .pResults = nullptr,
     };
+
+
+
 
     vkQueuePresentKHR(gfxQueue, &presentInfo);
 }

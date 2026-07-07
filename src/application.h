@@ -4,14 +4,18 @@
 
 #ifndef RIOW_VK_APPLICATION_H
 #define RIOW_VK_APPLICATION_H
+
+#include <volk.h>
 #include <cstdint>
 #include <iostream>
 #include <ostream>
 #include <SDL3/SDL_video.h>
 #include <shaderc/shaderc.hpp>
 
-#include <vulkan/vulkan_core.h>
+#include "imgui.h"
 
+
+class ImGuiRenderer;
 struct VmaAllocator_T;
 typedef struct VmaAllocator_T *VmaAllocator;
 struct VmaAllocation_T;
@@ -40,12 +44,12 @@ private:
 
     bool running = false;
     bool initializeVulkan();
+    bool initializeVMA();
     bool createVulkanInstance();
     bool createSurface();
     VkPhysicalDevice findPhysicalDevice();
     bool findGraphicsQueue();
     bool createDevice(VkPhysicalDevice physicalDevice);
-    bool initializeVMA();
     bool createSwapchain(uint32_t width, uint32_t height);
     bool createShaders();
     bool createCommandBuffers();
@@ -112,6 +116,10 @@ private:
     uint32_t frameCounter = 0;
     uint64_t timelineValue = MaxFramesInFlight - 1; // subtract 1 to ensure wait-for-ID / frame resource index start at 0 during render, avoids if (frameId < MaxFramesInFlight) check
 
+    ImGuiRenderer* imGuiRenderer = nullptr;
+
+    bool show_demo_window;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 };
 
 
